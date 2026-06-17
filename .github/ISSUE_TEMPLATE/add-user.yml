@@ -1,5 +1,5 @@
 name: 사용자 추가
-description: 이름, 지역, 성별, 나이를 입력해 테이블에 추가합니다
+description: 이름, 지역, 성별, 나이 입력창으로 테이블에 추가합니다
 title: "[추가] "
 labels:
   - add-user
@@ -7,18 +7,21 @@ body:
   - type: markdown
     attributes:
       value: |
-        아래 항목을 입력하고 제출하면 자동으로 `users.csv`와 `index.html`에 반영됩니다.
+        아래 입력창에 정보를 입력하고 **Submit new issue**를 누르면
+        `users.csv`와 `index.html`에 자동 반영됩니다.
   - type: input
     id: name
     attributes:
       label: 이름
-      placeholder: 예) 홍길동
+      description: 테이블에 표시할 이름
+      placeholder: 예) 세종대왕
     validations:
       required: true
   - type: input
     id: region
     attributes:
       label: 지역
+      description: 거주 지역
       placeholder: 예) 서울
     validations:
       required: true
@@ -26,6 +29,7 @@ body:
     id: gender
     attributes:
       label: 성별
+      description: 성별 선택
       options:
         - 남
         - 여
@@ -35,6 +39,9 @@ body:
     id: age
     attributes:
       label: 나이
+      description: 나이 (숫자)
       placeholder: 예) 30
     validations:
       required: true
+      pattern: '^[0-9]+$'
+      error: 숫자만 입력해 주세요.
