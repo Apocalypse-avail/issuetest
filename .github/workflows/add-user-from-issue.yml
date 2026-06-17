@@ -2,11 +2,20 @@ name: Add user from issue
 
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "처리할 이슈 번호"
+        required: true
+        type: number
 
 jobs:
   add-user:
-    if: contains(github.event.issue.labels.*.name, 'add-user')
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'add-user') ||
+      (github.event.action == 'opened' && contains(github.event.issue.title, '[추가]') && contains(github.event.issue.body, '### 이름'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -15,9 +24,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get issue body
+        id: issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.eventName === 'workflow_dispatch'
+              ? Number('${{ inputs.issue_number }}')
+              : context.payload.issue.number;
+
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+
+            if (!issue.body || !issue.body.includes('### 이름')) {
+              core.setFailed('Issue body does not contain user data.');
+              return;
+            }
+
+            core.setOutput('number', String(issueNumber));
+            core.setOutput('body', issue.body);
+
       - name: Parse issue and update CSV
         env:
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_BODY: ${{ steps.issue.outputs.body }}
         run: python scripts/parse_issue.py
 
       - name: Generate HTML from CSV
@@ -32,22 +64,23 @@ jobs:
             echo "No changes to commit"
             exit 1
           fi
-          git commit -m "Add user from issue #${{ github.event.issue.number }}"
+          git commit -m "Add user from issue #${{ steps.issue.outputs.number }}"
           git push
 
       - name: Comment and close issue
         uses: actions/github-script@v7
         with:
           script: |
+            const issueNumber = Number('${{ steps.issue.outputs.number }}');
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
+              issue_number: issueNumber,
               body: '✅ 사용자 정보가 테이블에 추가되었습니다.'
             });
             await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
+              issue_number: issueNumber,
               state: 'closed'
             });
