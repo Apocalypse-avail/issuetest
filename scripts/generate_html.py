@@ -1,53 +1,80 @@
-<!DOCTYPE html>
+import csv
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+CSV_PATH = ROOT / "users.csv"
+HTML_PATH = ROOT / "index.html"
+
+
+def load_users():
+    with CSV_PATH.open(encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def build_rows(users):
+    return "\n".join(
+        f"""      <tr>
+        <td>{u["이름"]}</td>
+        <td>{u["지역"]}</td>
+        <td>{u["성별"]}</td>
+        <td>{u["나이"]}</td>
+      </tr>"""
+        for u in users
+    )
+
+
+def generate_html(users):
+  rows = build_rows(users)
+  return f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>사용자 정보 테이블</title>
   <style>
-    body {
+    body {{
       font-family: "Malgun Gothic", sans-serif;
       max-width: 800px;
       margin: 40px auto;
       padding: 0 20px;
       color: #333;
-    }
-    h1 {
+    }}
+    h1 {{
       text-align: center;
       margin-bottom: 8px;
-    }
-    .actions {
+    }}
+    .actions {{
       text-align: center;
       margin-bottom: 24px;
-    }
-    .actions a {
+    }}
+    .actions a {{
       color: #4a90d9;
       text-decoration: none;
       font-weight: bold;
-    }
-    .actions a:hover {
+    }}
+    .actions a:hover {{
       text-decoration: underline;
-    }
-    table {
+    }}
+    table {{
       width: 100%;
       border-collapse: collapse;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    th, td {
+    }}
+    th, td {{
       border: 1px solid #ddd;
       padding: 12px 16px;
       text-align: center;
-    }
-    th {
+    }}
+    th {{
       background-color: #4a90d9;
       color: #fff;
-    }
-    tr:nth-child(even) {
+    }}
+    tr:nth-child(even) {{
       background-color: #f9f9f9;
-    }
-    tr:hover {
+    }}
+    tr:hover {{
       background-color: #f0f4ff;
-    }
+    }}
   </style>
 </head>
 <body>
@@ -63,37 +90,19 @@
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>김민수</td>
-        <td>서울</td>
-        <td>남</td>
-        <td>28</td>
-      </tr>
-      <tr>
-        <td>이지은</td>
-        <td>부산</td>
-        <td>여</td>
-        <td>32</td>
-      </tr>
-      <tr>
-        <td>박준혁</td>
-        <td>대구</td>
-        <td>남</td>
-        <td>25</td>
-      </tr>
-      <tr>
-        <td>최수연</td>
-        <td>인천</td>
-        <td>여</td>
-        <td>29</td>
-      </tr>
-      <tr>
-        <td>정태호</td>
-        <td>광주</td>
-        <td>남</td>
-        <td>35</td>
-      </tr>
+{rows}
     </tbody>
   </table>
 </body>
 </html>
+"""
+
+
+def main():
+    users = load_users()
+    HTML_PATH.write_text(generate_html(users), encoding="utf-8")
+    print(f"Generated {HTML_PATH} with {len(users)} users.")
+
+
+if __name__ == "__main__":
+    main()
