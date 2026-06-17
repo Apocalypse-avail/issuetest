@@ -2,7 +2,7 @@ name: Add user from issue
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -14,8 +14,7 @@ jobs:
   add-user:
     if: |
       github.event_name == 'workflow_dispatch' ||
-      (github.event.action == 'labeled' && github.event.label.name == 'add-user') ||
-      (github.event.action == 'opened' && contains(github.event.issue.title, '[추가]') && contains(github.event.issue.body, '### 이름'))
+      (contains(github.event.issue.title, '[추가]') && contains(github.event.issue.body, '### 이름'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
