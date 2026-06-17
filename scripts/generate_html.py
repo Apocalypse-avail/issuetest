@@ -79,7 +79,7 @@ def generate_html(users):
 </head>
 <body>
   <h1>사용자 정보</h1>
-  <p class="actions"><a href="form.html">+ 새 사용자 추가</a></p>
+  <p class="actions"><a href="https://github.com/Apocalypse-avail/issuetest/issues/new?template=add-user">+ 새 사용자 추가</a></p>
   <table>
     <thead>
       <tr>
